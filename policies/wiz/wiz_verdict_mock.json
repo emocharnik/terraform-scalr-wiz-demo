@@ -1,0 +1,42 @@
+{
+  "wiz_verdict_mock": {
+    "passed": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "PASSED" }
+        }
+      }
+    },
+    "failed_by_policy": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "FAILED_BY_POLICY" }
+        }
+      }
+    },
+    "errored": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "ERRORED" }
+        }
+      }
+    },
+    "unreachable": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "UNREACHABLE" }
+        }
+      }
+    },
+    "no_wiz_result": {
+      "tfplan": { "resource_changes": [] }
+    },
+    "pre_plan": {
+      "run_tasks": {}
+    }
+  }
+}

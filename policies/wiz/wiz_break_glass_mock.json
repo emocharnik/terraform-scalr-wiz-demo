@@ -1,0 +1,54 @@
+{
+  "wiz_break_glass_mock": {
+    "passed_no_tag": {
+      "tfplan": { "resource_changes": [] },
+      "tfrun": {
+        "workspace": { "name": "01-public-storage", "environment_type": "development", "tags": {} }
+      },
+      "run_tasks": { "wiz": { "status": { "verdict": "PASSED" } } }
+    },
+    "failed_no_tag": {
+      "tfplan": { "resource_changes": [] },
+      "tfrun": {
+        "workspace": { "name": "01-public-storage", "environment_type": "development", "tags": {} }
+      },
+      "run_tasks": { "wiz": { "status": { "verdict": "FAILED_BY_POLICY" } } }
+    },
+    "failed_with_tag_nonprod": {
+      "tfplan": { "resource_changes": [] },
+      "tfrun": {
+        "workspace": {
+          "name": "01-public-storage",
+          "environment_type": "development",
+          "tags": { "wiz-break-glass": "" }
+        }
+      },
+      "run_tasks": { "wiz": { "status": { "verdict": "FAILED_BY_POLICY" } } }
+    },
+    "failed_with_tag_production": {
+      "tfplan": { "resource_changes": [] },
+      "tfrun": {
+        "workspace": {
+          "name": "prod-payments",
+          "environment_type": "production",
+          "tags": { "wiz-break-glass": "" }
+        }
+      },
+      "run_tasks": { "wiz": { "status": { "verdict": "FAILED_BY_POLICY" } } }
+    },
+    "unreachable_with_tag_nonprod": {
+      "tfplan": { "resource_changes": [] },
+      "tfrun": {
+        "workspace": {
+          "name": "01-public-storage",
+          "environment_type": "development",
+          "tags": { "wiz-break-glass": "" }
+        }
+      },
+      "run_tasks": { "wiz": { "status": { "verdict": "UNREACHABLE" } } }
+    },
+    "pre_plan": {
+      "tfrun": { "workspace": { "tags": {} } }
+    }
+  }
+}

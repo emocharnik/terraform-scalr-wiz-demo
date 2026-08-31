@@ -1,0 +1,98 @@
+{
+  "wiz_severity_budget_mock": {
+    "_comment": "PLACEHOLDER SHAPE. Replace with a real policy input captured from a Scalr run (policy check step -> policy input) before relying on exact counts. See the header of wiz_severity_budget.rego.",
+    "clean": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "PASSED" },
+          "result": {
+            "ruleMatches": [
+              {
+                "rule": { "id": "s3-public-access", "name": "S3 bucket is not public" },
+                "severity": "HIGH",
+                "status": "PASSED",
+                "matches": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    "low_only": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "FAILED_BY_POLICY" },
+          "result": {
+            "ruleMatches": [
+              {
+                "rule": { "id": "missing-tags", "name": "Resource is missing required tags" },
+                "severity": "LOW",
+                "status": "FAILED",
+                "matches": [{ "resourceName": "aws_s3_bucket.reports" }]
+              },
+              {
+                "rule": { "id": "no-lifecycle", "name": "S3 bucket has no lifecycle rule" },
+                "severity": "LOW",
+                "status": "FAILED",
+                "matches": [{ "resourceName": "aws_s3_bucket.reports" }]
+              },
+              {
+                "rule": { "id": "imds-v2-optional", "name": "IMDSv2 is not required" },
+                "severity": "MEDIUM",
+                "status": "FAILED",
+                "matches": [{ "resourceName": "aws_instance.app" }]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "one_critical": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "FAILED_BY_POLICY" },
+          "result": {
+            "ruleMatches": [
+              {
+                "rule": { "id": "s3-public-access", "name": "S3 bucket is publicly readable" },
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "matches": [{ "resourceName": "aws_s3_bucket.customer_exports" }]
+              },
+              {
+                "rule": { "id": "missing-tags", "name": "Resource is missing required tags" },
+                "severity": "LOW",
+                "status": "FAILED",
+                "matches": [{ "resourceName": "aws_s3_bucket.customer_exports" }]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "medium_over_budget": {
+      "tfplan": { "resource_changes": [] },
+      "run_tasks": {
+        "wiz": {
+          "status": { "verdict": "FAILED_BY_POLICY" },
+          "result": {
+            "ruleMatches": [
+              { "rule": { "id": "m1" }, "severity": "MEDIUM", "status": "FAILED", "matches": [] },
+              { "rule": { "id": "m2" }, "severity": "MEDIUM", "status": "FAILED", "matches": [] },
+              { "rule": { "id": "m3" }, "severity": "MEDIUM", "status": "FAILED", "matches": [] },
+              { "rule": { "id": "m4" }, "severity": "MEDIUM", "status": "FAILED", "matches": [] },
+              { "rule": { "id": "m5" }, "severity": "MEDIUM", "status": "FAILED", "matches": [] },
+              { "rule": { "id": "m6" }, "severity": "MEDIUM", "status": "FAILED", "matches": [] }
+            ]
+          }
+        }
+      }
+    },
+    "pre_plan": {
+      "run_tasks": {}
+    }
+  }
+}
