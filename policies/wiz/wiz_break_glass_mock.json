@@ -5,7 +5,7 @@
       "tfrun": {
         "workspace": { "name": "01-public-storage", "environment_type": "development", "tags": {} }
       },
-      "run_tasks": { "wiz": { "status": { "verdict": "PASSED" } } }
+      "run_tasks": { "wiz": { "status": { "verdict": "PASSED_BY_POLICY" } } }
     },
     "failed_no_tag": {
       "tfplan": { "resource_changes": [] },

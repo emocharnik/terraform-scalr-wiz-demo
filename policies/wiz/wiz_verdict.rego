@@ -21,6 +21,18 @@ wiz_verdict_post_plan if {
 	input.tfplan
 }
 
+# Verdicts observed from a real Scalr run, as printed in the Wiz step's
+# "Scan summary: Verdict:" line:
+#
+#   PASSED_BY_POLICY   every evaluated Wiz CI/CD policy passed
+#   FAILED_BY_POLICY   at least one evaluated policy failed
+#   ERRORED            the scan started but did not finish
+#   UNREACHABLE        Scalr could not reach the Wiz API
+#
+# This is a deny-list, deliberately: any verdict not named below is treated as a
+# pass, so a new Wiz verdict string cannot silently block every run in the
+# account. The trade-off is the MISSING rule at the bottom, which is what keeps
+# the policy fail-closed when no result is attached at all.
 wiz_verdict_value := upper(object.get(
 	input,
 	["run_tasks", "wiz", "status", "verdict"],
