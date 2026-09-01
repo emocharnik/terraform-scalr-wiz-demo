@@ -51,3 +51,7 @@ plan.log
 # Rehearsal artifacts produced by scripts/rehearse.sh
 plan.json
 wiz.json
+
+# Captured Scalr policy inputs -- contain account IDs, user emails and Wiz URLs
+input.json
+*.policy-input.json

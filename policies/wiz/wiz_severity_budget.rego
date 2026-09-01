@@ -10,20 +10,20 @@
 # an approval flow to demo on top of the block itself.
 #
 # ---------------------------------------------------------------------------
-# ON THE NESTED SCHEMA — READ BEFORE DEMOING
+# SCHEMA — pinned against a real capture
 # ---------------------------------------------------------------------------
-# Scalr documents `status.verdict` as stable but explicitly notes that Wiz owns
-# the nested result schema. Rather than hard-code a path that may shift, this
-# policy walks the whole Wiz result and collects any object carrying a
-# `severity` string, skipping objects that also carry a passing status.
+# Severity counts come from the IaC scan statistics that Wiz returns:
 #
-# That is deliberately tolerant, and it means counts are approximate: a result
-# that repeats severity at both the rule and the match level can double-count.
-# Before you rely on the exact numbers in front of an audience:
-#   1. Run any failing scenario with this policy group linked.
-#   2. Open the run's policy check step and copy the real policy input.
-#   3. Paste it into wiz_severity_budget_mock.json, replacing the placeholder.
-#   4. Tighten the walk below into a direct path, and re-run `opa test`.
+#   run_tasks.wiz.result.iac.scanStatistics
+#     { infoMatches, lowMatches, mediumMatches, highMatches, criticalMatches,
+#       totalMatches, filesFound, filesParsed, queriesLoaded, queriesExecuted,
+#       queriesExecutionFailed }
+#
+# PREREQUISITE: these counters reflect findings that survived your Wiz CI/CD
+# scan policy's filters. If that policy's `severityThreshold` is CRITICAL, every
+# lower-severity finding is discarded before serialisation and every counter
+# here reads 0 -- no Rego can recover them. Run wiz_integration_hygiene first;
+# it detects exactly that misconfiguration.
 
 package terraform
 
@@ -33,7 +33,11 @@ wiz_sev_post_plan if {
 	input.tfplan
 }
 
-wiz_sev_result := object.get(input, ["run_tasks", "wiz"], {})
+wiz_sev_stats := object.get(
+	input,
+	["run_tasks", "wiz", "result", "iac", "scanStatistics"],
+	{},
+)
 
 # How many findings of each severity this account is willing to ship.
 # Tune these to make a scenario pass or fail on demand during the demo.
@@ -44,27 +48,17 @@ wiz_sev_budget := {
 	"LOW": 20,
 }
 
-wiz_sev_passing_status := {"PASSED", "PASS", "PASSING", "SUCCESS", "SKIPPED", "NOT_APPLICABLE", "IGNORED"}
-
-# An object counts as "resolved" if any of its status-ish fields reads as a pass.
-wiz_sev_is_passing(obj) if {
-	some key in ["status", "result", "state", "outcome"]
-	value := object.get(obj, key, null)
-	is_string(value)
-	upper(value) in wiz_sev_passing_status
+wiz_sev_field := {
+	"CRITICAL": "criticalMatches",
+	"HIGH": "highMatches",
+	"MEDIUM": "mediumMatches",
+	"LOW": "lowMatches",
 }
 
-wiz_sev_findings contains obj if {
-	walk(wiz_sev_result, [_, obj])
-	is_object(obj)
-	is_string(obj.severity)
-	not wiz_sev_is_passing(obj)
+wiz_sev_count(level) := n if {
+	n := object.get(wiz_sev_stats, wiz_sev_field[level], 0)
+	is_number(n)
 }
-
-wiz_sev_count(level) := count([obj |
-	some obj in wiz_sev_findings
-	upper(obj.severity) == level
-])
 
 wiz_severity_budget_violations contains reason if {
 	wiz_sev_post_plan

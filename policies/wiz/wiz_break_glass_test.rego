@@ -28,3 +28,13 @@ test_break_glass_tag_covers_unreachable_scan if {
 test_break_glass_pre_plan_is_silent if {
 	count(wiz_break_glass_violations) == 0 with input as data.wiz_break_glass_mock.pre_plan
 }
+
+# tfrun.workspace.tags serialises as an array in the current policy input.
+# These cover the element shapes the lookup accepts.
+test_break_glass_tag_as_object_element if {
+	count(wiz_break_glass_violations) == 0 with input as data.wiz_break_glass_mock.failed_with_tag_object_form
+}
+
+test_break_glass_tag_as_legacy_map if {
+	count(wiz_break_glass_violations) == 0 with input as data.wiz_break_glass_mock.failed_with_tag_map_form
+}

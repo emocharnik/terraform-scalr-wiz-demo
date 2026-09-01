@@ -2,8 +2,6 @@ package terraform
 
 import rego.v1
 
-# A Wiz result whose only severity-bearing entry is marked PASSED must not be
-# counted as a finding.
 test_budget_clean_result_allows_run if {
 	count(wiz_severity_budget_violations) == 0 with input as data.wiz_severity_budget_mock.clean
 }
@@ -18,17 +16,20 @@ test_budget_single_critical_blocks if {
 	count(wiz_severity_budget_violations) == 1 with input as data.wiz_severity_budget_mock.one_critical
 }
 
-test_budget_counts_critical_correctly if {
+test_budget_reads_counts_from_scan_statistics if {
 	wiz_sev_count("CRITICAL") == 1 with input as data.wiz_severity_budget_mock.one_critical
-}
-
-# Passing entries are excluded from the counts, not just from the verdict.
-test_budget_excludes_passing_entries if {
-	wiz_sev_count("HIGH") == 0 with input as data.wiz_severity_budget_mock.clean
+	wiz_sev_count("MEDIUM") == 6 with input as data.wiz_severity_budget_mock.medium_over_budget
 }
 
 test_budget_medium_over_budget_blocks if {
 	count(wiz_severity_budget_violations) == 1 with input as data.wiz_severity_budget_mock.medium_over_budget
+}
+
+# The trap this repo hit in practice: Wiz filtered every finding before
+# serialising, so all counters read zero and this policy is blind. It must not
+# claim the plan is safe -- that is wiz_integration_hygiene's job to catch.
+test_budget_is_blind_when_findings_were_filtered_away if {
+	count(wiz_severity_budget_violations) == 0 with input as data.wiz_severity_budget_mock.filtered_away
 }
 
 test_budget_pre_plan_is_silent if {

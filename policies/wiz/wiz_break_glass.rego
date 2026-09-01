@@ -36,9 +36,26 @@ wiz_bg_failed if {
 	wiz_bg_verdict in {"FAILED_BY_POLICY", "ERRORED", "UNREACHABLE"}
 }
 
-# tfrun.workspace.tags is an object keyed by tag name.
+# tfrun.workspace.tags is an ARRAY in the current policy input -- verified
+# against a real capture, where an untagged workspace serialises as [].
+# Older Scalr examples show it as an object keyed by tag name, and the element
+# type of the array is not documented, so all three shapes are accepted:
+# ["name"], [{"name": "..."}] and {"name": ""}.
 wiz_bg_granted if {
-	object.get(input, ["tfrun", "workspace", "tags", wiz_bg_tag], null) != null
+	some tag in object.get(input, ["tfrun", "workspace", "tags"], [])
+	tag == wiz_bg_tag
+}
+
+wiz_bg_granted if {
+	some tag in object.get(input, ["tfrun", "workspace", "tags"], [])
+	is_object(tag)
+	object.get(tag, "name", "") == wiz_bg_tag
+}
+
+wiz_bg_granted if {
+	tags := object.get(input, ["tfrun", "workspace", "tags"], [])
+	is_object(tags)
+	object.get(tags, wiz_bg_tag, null) != null
 }
 
 wiz_bg_production if {

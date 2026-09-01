@@ -57,73 +57,72 @@ Choose the enforcement mode:
 Scope the connection to the environment you're demoing in. Self-hosted agents
 need Scalr Agent 1.3.0+.
 
-### 1a. Verify Wiz actually fails on IaC — do not skip this
+### 1a. Make Wiz actually fail on IaC — do not skip this
 
-The scan policies you name on the Scalr connection are what decide pass/fail.
-The Wiz defaults lean towards vulnerabilities, SAST and malware; **if no IaC
-scan policy is evaluated, or its severity threshold filters everything, every
-scenario in this repo reports `PASSED_BY_POLICY` and nothing ever blocks.**
-
-Run `02-network-exposure` once and read the Wiz step's scan summary:
+**The Wiz built-in defaults will not block anything.** Confirmed by inspecting a
+real policy input, the stock `Default IaC policy` ships as:
 
 ```
-No results found:  IaC (86 filtered), SAST, OS packages, ...
-Verdict: PASSED_BY_POLICY
-Failed Policies:
+params.severityThreshold    = "CRITICAL"
+policyLifecycleEnforcements = [ {CLI, AUDIT}, {CODE, AUDIT}, {ADMISSION_CONTROLLER, AUDIT} ]
 ```
 
-`IaC (86 filtered)` is the tell. Wiz found 86 IaC findings and then discarded
-every one of them, so no policy failed. What you want instead is a non-empty
-`Failed Policies:` line and `Verdict: FAILED_BY_POLICY`.
+Two independent reasons nothing fails:
 
-Check `Evaluated Policies` on that same summary first:
+1. **`severityThreshold: CRITICAL`** discards every finding below Critical.
+   Most Terraform misconfiguration rules are rated High or lower, so in practice
+   everything is dropped.
+2. **`enforcementMethod: AUDIT`** on the CLI lifecycle means the policy reports
+   but never fails the scan. Compare `Default vulnerabilities policy`, which is
+   `BLOCK`.
 
-- **No IaC policy listed** — add one to the scan policy list on the Scalr Wiz
-  connection. Scalr matches on **exact display name**, so a policy renamed in
-  Wiz breaks scans until the connection is updated.
-- **`Default IaC policy` is listed and findings are still filtered** — this is
-  the common case. The policy is evaluating, but its matching criteria exclude
-  your findings. Wiz's stock IaC policy sits at a high severity threshold, and
-  most Terraform misconfiguration rules are rated High or below, so everything
-  gets discarded.
+Measured on scenarios in this repo against those defaults:
 
-To fix the second case, open the `Wiz Cloud Event` link from the run output. It
-lists the findings Wiz actually recorded and their severities — that tells you
-precisely where the threshold needs to sit. Then either:
+| Scenario | IaC findings | Failed policies | Verdict |
+|---|---|---|---|
+| `02-network-exposure` | 86 | none | `PASSED_BY_POLICY` |
+| `04-iam-overprivileged` | 15 | none | `PASSED_BY_POLICY` |
 
-- **Lower the threshold on `Default IaC policy`** to at or below the highest
-  severity in that list, or
-- **Create a demo-specific CI/CD scan policy** (recommended — it leaves your
-  real policy untouched): type IaC, severity threshold at or below your
-  findings, action set to fail the scan. Name it something stable like
-  `Scalr Demo IaC policy` and add that exact display name to the Scalr
-  connection.
+The tell in the run output is `IaC (N filtered)` alongside an empty
+`Failed Policies:` line.
 
-The second option is worth the extra two minutes: you get a policy tuned for the
-demo without loosening a control that other pipelines depend on.
+**Filtered findings are gone, not hidden.** They are discarded before the result
+is serialised, so `run_tasks.wiz.result.iac.ruleMatches` is `null` and every
+counter in `scanStatistics` reads `0`. No OPA policy can recover them. This must
+be fixed in Wiz — there is no Scalr-side workaround.
 
-The connection's **Default policies** field is a lookup by exact display name,
-not a place to define behaviour. Leaving it empty uses your tenant's default
-CI/CD policies; naming policies scopes the scan to exactly those, which also
-strips vulnerability/SAST/malware noise from the run output. No value typed here
-can change a policy's severity threshold.
+#### The fix
 
-#### If you have no access to the Wiz console
+In Wiz, create a CI/CD scan policy (cloning rather than editing the built-in
+keeps other pipelines untouched):
 
-1. Try `01-public-storage` and `04-iam-overprivileged` before concluding the
-   threshold is the problem. They plant data-exposure and identity-escalation
-   findings, which Wiz rates higher than the network misconfigurations in `02`.
-   One of them may clear a threshold that `02` cannot.
-2. Switch the connection to **Policy check** mode, run a failing scenario, and
-   open the policy input on the post-plan policy check step. If the filtered
-   findings are present in `input.run_tasks.wiz` despite the passing verdict,
-   `wiz_severity_budget` can enforce on them directly and you need no Wiz change
-   at all — which is arguably the better story: the Wiz policy is tuned for
-   another pipeline, and Scalr still gates the deploy. If they are stripped, you
-   will see that immediately and know Wiz access is required.
+- Type: **IaC**
+- `severityThreshold`: **LOW** (or MEDIUM — anything below CRITICAL)
+- CLI enforcement: **BLOCK** for auto-fail mode, or leave **AUDIT** if you intend
+  to enforce through OPA instead
+- Name: something stable, e.g. `Scalr Demo IaC`
 
-Only once `02` returns `FAILED_BY_POLICY` with a non-empty `Failed Policies:`
-line is the demo ready.
+Then put that exact display name in the connection's **Default policies** field.
+Scalr matches on exact display name; a rename in Wiz breaks scans until updated.
+
+That field is a lookup, not a definition — it selects which policies run, not how
+they filter. Leaving it empty uses your tenant defaults. No value typed there can
+change a threshold.
+
+#### Choosing where enforcement happens
+
+| | `severityThreshold` | CLI enforcement | Who blocks |
+|---|---|---|---|
+| Auto-fail | LOW | **BLOCK** | Wiz |
+| Policy check + OPA | LOW | AUDIT | Your Rego, via `wiz_severity_budget` |
+
+The second is the better demo: Wiz reports, Scalr decides, and the severity
+budget is yours to tune live. Either way `severityThreshold` must come down —
+that is the non-negotiable change.
+
+`wiz_integration_hygiene` (enabled by default) detects both misconfigurations
+and fails the run with an explanation, so you find out during setup rather than
+mid-demo.
 
 ### 2. Create the workspaces
 
@@ -200,6 +199,7 @@ All three live in `policies/wiz/`, each with mock inputs and `opa test` tests.
 
 | Policy | Default | Enforcement | Behaviour |
 |---|---|---|---|
+| `wiz_integration_hygiene` | enabled | hard-mandatory | Fails the run if the evaluated Wiz policies can't stop a bad plan: no IaC policy, `severityThreshold` above HIGH, or CLI enforcement set to AUDIT. |
 | `wiz_verdict` | enabled | hard-mandatory | Blocks on `FAILED_BY_POLICY`, `ERRORED`, `UNREACHABLE`, or a missing result. Fails closed — an unverified plan is not a passing plan. |
 | `wiz_severity_budget` | disabled | soft-mandatory | Grades findings against a per-severity budget. Critical/High block; Medium/Low tolerated up to a limit. |
 | `wiz_break_glass` | disabled | hard-mandatory | Blocks Wiz failures unless the workspace carries the `wiz-break-glass` tag — and never honours that tag in production. |
@@ -210,17 +210,28 @@ Two implementation notes worth knowing before you're asked:
 gated on `input.tfplan` being present, so a pre-plan evaluation stays silent
 instead of blocking the run before Wiz has had a chance to scan.
 
-**The nested schema.** Scalr documents `status.verdict` as stable but notes that
-Wiz owns the nested result schema. `wiz_verdict` and `wiz_break_glass` read only
-`status.verdict`. `wiz_severity_budget` needs severities, so it *walks* the
-result collecting any object with a `severity` field, skipping ones marked
-passed. That's deliberately tolerant, and counts can double-count a result that
-repeats severity at both rule and match level. Before relying on exact numbers:
+**The schema, verified.** Captured from a real run rather than assumed:
 
-1. Run a failing scenario with the policy group linked.
-2. Open the run's policy check step and copy the real policy input.
-3. Paste it into `wiz_severity_budget_mock.json`, replacing the placeholder.
-4. Tighten the walk into a direct path and re-run `opa test`.
+```
+run_tasks.wiz.status.verdict                     PASSED_BY_POLICY | FAILED_BY_POLICY | ERRORED | UNREACHABLE
+run_tasks.wiz.status.state                       SUCCESS | ...
+run_tasks.wiz.result.iac.ruleMatches             findings, or null when filtered
+run_tasks.wiz.result.iac.failedPolicyMatches     null when nothing failed
+run_tasks.wiz.result.iac.scanStatistics          {critical,high,medium,low,info}Matches, totalMatches
+run_tasks.wiz.policies[]                         .name .type .params.severityThreshold
+                                                 .policyLifecycleEnforcements[]{enforcementMethod,deploymentLifecycle}
+tfrun.workspace.tags                             ARRAY (older Scalr examples show an object)
+tfrun.workspace.environment_type                 production | staging | testing | development | unmapped
+```
+
+`wiz_severity_budget` reads the `scanStatistics` counters directly.
+`wiz_break_glass` accepts all three tag shapes (`["name"]`, `[{"name":…}]`, and
+the legacy `{"name":""}`) because the array element type isn't documented.
+
+To re-capture after a Wiz or Scalr upgrade: run a scenario in policy-check mode,
+open the post-plan policy check step, copy the policy input, and rebuild the
+mocks from it. Captured inputs are gitignored — they carry account IDs, user
+emails and Wiz report URLs.
 
 ---
 
@@ -257,6 +268,20 @@ Requires OPA 0.59+ (for `import rego.v1`) and Terraform 1.5+ or OpenTofu
 **Every scenario returns `PASSED_BY_POLICY`.** The scan is working but no IaC
 policy is failing findings. See setup step 1a — look for `IaC (N filtered)` in
 the scan summary.
+
+Measured on a tenant using the stock `Default IaC policy`, with that policy
+confirmed present in `Evaluated Policies`:
+
+| Scenario | IaC findings | Failed policies |
+|---|---|---|
+| `02-network-exposure` | 86 | none |
+| `04-iam-overprivileged` | 15 | none |
+
+Both filtered entirely, across two different rule classes. If you see this, the
+scenarios are working and the threshold on the Wiz side is the cause — no
+change to the Terraform or to Scalr's settings will produce a block. Note also
+that naming policies in the connection's **Default policies** field does not
+help: it selects which policies run, not how they filter.
 
 **`Verdict: PASSED_BY_POLICY` but `Failed Policies:` is empty and you expected a
 block.** Same cause. Note that `wiz_verdict` is a deny-list: it blocks on
