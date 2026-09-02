@@ -15,6 +15,7 @@ locals {
     "04-iam-overprivileged",
     "05-low-severity-only",
     "06-remediated",
+    "07-critical-exposure",
   ]
 
   repository_id = "emocharnik/terraform-scalr-wiz-demo"

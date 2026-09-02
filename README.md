@@ -26,6 +26,7 @@ since it scans the exported plan JSON. See the comment block in any
 | `04-iam-overprivileged` | **critical** | `Action:*` on `Resource:*`, role assumable by `AWS:"*"`, AdministratorAccess attached, static access key, unrestricted `iam:PassRole` |
 | `05-low-severity-only` | **low/medium only** | Missing tags, no lifecycle rule, no detailed monitoring, IMDSv2 optional |
 | `06-remediated` | **clean** | Scenarios 01–04 rebuilt correctly — the before/after payoff |
+| `07-critical-exposure` | **maximum** | Anonymous `s3:*` + public-read-write ACL, public AMI, public policies on Secrets Manager / ECR / SQS, internet-facing unencrypted Redshift, OpenSearch with anonymous `es:*`, EKS API open to `0.0.0.0/0`, weak password policy |
 
 Each `main.tf` opens with a comment listing exactly which findings are planted
 and why that scenario is useful, so you can read it aloud off the screen.
@@ -108,6 +109,28 @@ Scalr matches on exact display name; a rename in Wiz breaks scans until updated.
 That field is a lookup, not a definition — it selects which policies run, not how
 they filter. Leaving it empty uses your tenant defaults. No value typed there can
 change a threshold.
+
+#### Finding out which rules are Critical, without Wiz console access
+
+You don't need the Wiz UI to iterate. With `severityThreshold: CRITICAL`, only
+Critical findings survive filtering — so the policy input tells you directly
+whether you landed any:
+
+1. Run a scenario with the connection in **Policy check** mode.
+2. Open the post-plan policy check step and copy the policy input.
+3. Read `run_tasks.wiz.result.iac.scanStatistics.criticalMatches`.
+   - `> 0` — the findings survived. `result.iac.ruleMatches` names them, and
+     `wiz_severity_budget` will block the run even though Wiz is set to AUDIT.
+     Your demo works with no Wiz change at all.
+   - `0` — nothing in that scenario is rated Critical. Try another, and if
+     `07-critical-exposure` also returns 0, stop writing Terraform: the
+     threshold itself has to come down.
+
+Measured so far on a stock tenant: `02-network-exposure` 86 findings and
+`04-iam-overprivileged` 15 findings, all filtered, zero Critical. Wide-open
+security groups and wildcard IAM admin are **not** Critical in Wiz's catalogue,
+which is why `07-critical-exposure` reaches for anonymous write access, publicly
+shared resources and public resource policies on secrets instead.
 
 #### Choosing where enforcement happens
 
