@@ -1,0 +1,508 @@
+{
+  "wiz_failed_policies_mock": {
+    "_comment": "Pinned to a real capture: workspace 07-critical-exposure, verdict WARN_BY_POLICY, one failed match on 'Demo IaC policy' set to AUDIT. Note scanStatistics is all zeroes even though the policy failed -- that is why this policy keys on failedPolicyMatches.",
+    "warn_audit_mode": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "WARN_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "__typename": "CICDIACScanResult",
+              "failedPolicyMatches": [
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Demo IaC policy",
+                    "description": "Default built-in policy for Infrastructure as Code scanning",
+                    "type": "IAC",
+                    "builtin": false,
+                    "projects": [
+                      {
+                        "id": "13009552-d70c-5963-b924-c857e656229f"
+                      }
+                    ],
+                    "policyLifecycleEnforcements": [
+                      {
+                        "enforcementMethod": "AUDIT",
+                        "deploymentLifecycle": "ADMISSION_CONTROLLER",
+                        "enforcementConfig": {
+                          "enforceOnScope": false
+                        }
+                      },
+                      {
+                        "enforcementMethod": "AUDIT",
+                        "deploymentLifecycle": "CLI",
+                        "enforcementConfig": null
+                      },
+                      {
+                        "enforcementMethod": "AUDIT",
+                        "deploymentLifecycle": "CODE",
+                        "enforcementConfig": null
+                      }
+                    ],
+                    "ignoreRules": null,
+                    "lifecycleTargets": [
+                      "BUILD",
+                      "DEPLOY",
+                      "CODE"
+                    ],
+                    "Default": false
+                  },
+                  "ignoreReason": null,
+                  "matchedIgnoreRules": null
+                }
+              ],
+              "ruleMatches": null,
+              "scanStatistics": {
+                "infoMatches": 0,
+                "lowMatches": 0,
+                "mediumMatches": 0,
+                "highMatches": 0,
+                "criticalMatches": 0,
+                "totalMatches": 0,
+                "filesFound": 4,
+                "filesParsed": 4,
+                "queriesLoaded": 2445,
+                "queriesExecuted": 2441,
+                "queriesExecutionFailed": 0
+              },
+              "secrets": null,
+              "fileTypes": [
+                "TERRAFORM"
+              ],
+              "discoveredResources": [
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "world_writable",
+                  "resourceType": "aws_s3_bucket",
+                  "startLine": 32,
+                  "endLine": 36,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "world_writable",
+                  "resourceType": "aws_s3_bucket_public_access_block",
+                  "startLine": 38,
+                  "endLine": 44,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "world_writable",
+                  "resourceType": "aws_s3_bucket_ownership_controls",
+                  "startLine": 46,
+                  "endLine": 52,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "world_writable",
+                  "resourceType": "aws_s3_bucket_acl",
+                  "startLine": 54,
+                  "endLine": 62,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "world_writable",
+                  "resourceType": "aws_s3_bucket_policy",
+                  "startLine": 65,
+                  "endLine": 85,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "sensitive",
+                  "resourceType": "aws_ebs_volume",
+                  "startLine": 91,
+                  "endLine": 96,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "sensitive",
+                  "resourceType": "aws_ebs_snapshot",
+                  "startLine": 98,
+                  "endLine": 101,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "external",
+                  "resourceType": "aws_snapshot_create_volume_permission",
+                  "startLine": 106,
+                  "endLine": 109,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "public",
+                  "resourceType": "aws_ami_launch_permission",
+                  "startLine": 112,
+                  "endLine": 115,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "api_keys",
+                  "resourceType": "aws_secretsmanager_secret",
+                  "startLine": 121,
+                  "endLine": 125,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "api_keys",
+                  "resourceType": "aws_secretsmanager_secret_policy",
+                  "startLine": 128,
+                  "endLine": 143,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "app",
+                  "resourceType": "aws_ecr_repository",
+                  "startLine": 145,
+                  "endLine": 149,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "app",
+                  "resourceType": "aws_ecr_repository_policy",
+                  "startLine": 151,
+                  "endLine": 165,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "jobs",
+                  "resourceType": "aws_sqs_queue",
+                  "startLine": 167,
+                  "endLine": 170,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/main.tf",
+                  "name": "jobs",
+                  "resourceType": "aws_sqs_queue_policy",
+                  "startLine": 172,
+                  "endLine": 187,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "main",
+                  "resourceType": "aws_vpc",
+                  "startLine": 6,
+                  "endLine": 10,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "public_a",
+                  "resourceType": "aws_subnet",
+                  "startLine": 12,
+                  "endLine": 18,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "public_b",
+                  "resourceType": "aws_subnet",
+                  "startLine": 20,
+                  "endLine": 26,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "main",
+                  "resourceType": "aws_internet_gateway",
+                  "startLine": 28,
+                  "endLine": 31,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "everything",
+                  "resourceType": "aws_security_group",
+                  "startLine": 34,
+                  "endLine": 56,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "analytics",
+                  "resourceType": "aws_redshift_cluster",
+                  "startLine": 59,
+                  "endLine": 75,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "logs",
+                  "resourceType": "aws_opensearch_domain",
+                  "startLine": 78,
+                  "endLine": 117,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "eks",
+                  "resourceType": "aws_iam_role",
+                  "startLine": 120,
+                  "endLine": 135,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "main",
+                  "resourceType": "aws_eks_cluster",
+                  "startLine": 137,
+                  "endLine": 150,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                },
+                {
+                  "filePath": "/opt/workdir/scenarios/07-critical-exposure/exposed_services.tf",
+                  "name": "weak",
+                  "resourceType": "aws_iam_account_password_policy",
+                  "startLine": 153,
+                  "endLine": 161,
+                  "isRemoved": false,
+                  "platform": "TERRAFORM"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "clean": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "PASSED_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "ruleMatches": null,
+              "failedPolicyMatches": [],
+              "scanStatistics": {
+                "infoMatches": 0,
+                "lowMatches": 0,
+                "mediumMatches": 0,
+                "highMatches": 0,
+                "criticalMatches": 0,
+                "totalMatches": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "one_failed_policy": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "FAILED_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "ruleMatches": null,
+              "failedPolicyMatches": [
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Demo IaC policy",
+                    "type": "IAC",
+                    "builtin": false
+                  },
+                  "ignoreReason": null,
+                  "matchedIgnoreRules": null
+                }
+              ],
+              "scanStatistics": {
+                "infoMatches": 0,
+                "lowMatches": 0,
+                "mediumMatches": 0,
+                "highMatches": 0,
+                "criticalMatches": 0,
+                "totalMatches": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "two_failed_policies": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "FAILED_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "ruleMatches": null,
+              "failedPolicyMatches": [
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Demo IaC policy",
+                    "type": "IAC",
+                    "builtin": false
+                  },
+                  "ignoreReason": null,
+                  "matchedIgnoreRules": null
+                },
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Default secrets policy",
+                    "type": "SECRETS",
+                    "builtin": false
+                  },
+                  "ignoreReason": null,
+                  "matchedIgnoreRules": null
+                }
+              ],
+              "scanStatistics": {
+                "infoMatches": 0,
+                "lowMatches": 0,
+                "mediumMatches": 0,
+                "highMatches": 0,
+                "criticalMatches": 0,
+                "totalMatches": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "ignored_by_reason": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "PASSED_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "ruleMatches": null,
+              "failedPolicyMatches": [
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Demo IaC policy",
+                    "type": "IAC",
+                    "builtin": false
+                  },
+                  "ignoreReason": "Accepted risk, ticket SEC-42",
+                  "matchedIgnoreRules": null
+                }
+              ],
+              "scanStatistics": {
+                "infoMatches": 0,
+                "lowMatches": 0,
+                "mediumMatches": 0,
+                "highMatches": 0,
+                "criticalMatches": 0,
+                "totalMatches": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "ignored_by_rule": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "PASSED_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "ruleMatches": null,
+              "failedPolicyMatches": [
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Demo IaC policy",
+                    "type": "IAC",
+                    "builtin": false
+                  },
+                  "ignoreReason": null,
+                  "matchedIgnoreRules": [
+                    {
+                      "id": "rule-1"
+                    }
+                  ]
+                }
+              ],
+              "scanStatistics": {
+                "infoMatches": 0,
+                "lowMatches": 0,
+                "mediumMatches": 0,
+                "highMatches": 0,
+                "criticalMatches": 0,
+                "totalMatches": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "pre_plan": {
+      "run_tasks": {}
+    }
+  }
+}

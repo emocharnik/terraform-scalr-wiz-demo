@@ -1,22 +1,31 @@
 # Scenario 07 — Maximum severity
 #
-# Purpose: clear a Wiz IaC policy whose `severityThreshold` is CRITICAL.
+# The heaviest scenario in the repo: 204 IaC findings, measured with
 #
-# Scenarios 02 and 04 produced 101 findings between them and not one was rated
-# Critical — wide-open security groups and wildcard IAM admin both land at High
-# or below in Wiz's rule catalogue. This scenario reaches for the categories
-# that are rated Critical: anonymous WRITE access to data, resources shared
-# publicly with the entire internet, and public resource policies on secrets.
+#     wizcli iac scan --by-policy-hits=DISABLED
 #
-# Why this matters even while your Wiz policy is set to AUDIT:
-#   Findings at or above the threshold survive filtering, so they appear in
-#   run_tasks.wiz.result.iac.scanStatistics.criticalMatches. AUDIT means Wiz
-#   won't fail the scan, but `wiz_severity_budget` reads that counter and blocks
-#   the run anyway. Wiz reports, Scalr enforces.
+#     IaC: 204 results -- 114 HIGH, 53 MEDIUM, 34 LOW, 3 INFO, 0 CRITICAL
 #
-# NO GUARANTEE OF SEVERITY. Wiz owns the rule catalogue and I cannot see it.
-# Verify empirically -- see the verification loop in the README. If
-# criticalMatches is still 0, the fix is the Wiz threshold, not more Terraform.
+# It was written to try to clear a CRITICAL severity threshold. It could not,
+# and neither can anything else: Wiz's IaC rules do not appear to emit CRITICAL.
+# 114 HIGH findings on infrastructure this exposed is the ceiling. That result is
+# the useful one -- it proves a CRITICAL-gated IaC policy can never fail a run,
+# so the threshold must be lowered rather than the Terraform made worse.
+#
+# Use this scenario once your Wiz IaC policy sits at HIGH or below. It is the
+# most dramatic run to demo: 114 HIGH findings across storage, identity,
+# secrets, network and Kubernetes, on a plan that Terraform itself considers
+# perfectly valid.
+#
+# What it plants:
+#   * Anonymous s3:* plus a public-read-write ACL — the internet can overwrite data
+#   * Public AMI (launch permission group "all")
+#   * Public resource policies on Secrets Manager, ECR and SQS
+#   * Internet-facing unencrypted Redshift with a hardcoded password
+#   * OpenSearch with anonymous es:*, no encryption at rest or in transit, no VPC
+#   * EKS API server reachable from 0.0.0.0/0
+#   * Security group opening every port to both 0.0.0.0/0 and ::/0
+#   * Account password policy permitting 6-character passwords
 
 locals {
   tags = {

@@ -25,7 +25,8 @@ wiz_verdict_post_plan if {
 # "Scan summary: Verdict:" line:
 #
 #   PASSED_BY_POLICY   every evaluated Wiz CI/CD policy passed
-#   FAILED_BY_POLICY   at least one evaluated policy failed
+#   WARN_BY_POLICY     a policy MATCHED, but is set to AUDIT so Wiz will not fail
+#   FAILED_BY_POLICY   at least one evaluated policy failed and is set to BLOCK
 #   ERRORED            the scan started but did not finish
 #   UNREACHABLE        Scalr could not reach the Wiz API
 #
@@ -69,6 +70,44 @@ wiz_verdict_violations contains reason if {
 
 	reason := "Wiz: no scan result was attached to this run. Confirm the Wiz integration is enabled for this environment."
 }
+
+# The audit-mode case, and the reason policy-check mode earns its keep.
+#
+# A Wiz policy whose CLI enforcement is AUDIT reports its findings and returns
+# WARN_BY_POLICY. Wiz will not fail the run -- by design. Auto-fail mode honours
+# that and lets the plan through; Scalr docs are explicit that warnings do not
+# block. So on an audit-mode tenant, auto-fail can never stop anything.
+#
+# Blocking here is what converts an advisory Wiz policy into an enforced gate
+# without asking the Wiz administrator to change enforcement for every other
+# pipeline that shares the policy.
+#
+# Set this to false if you genuinely want warnings to pass.
+wiz_verdict_block_on_warn := true
+
+wiz_verdict_violations contains reason if {
+	wiz_verdict_post_plan
+	wiz_verdict_block_on_warn
+	wiz_verdict_value == "WARN_BY_POLICY"
+
+	reason := sprintf(
+		"Wiz: a scan policy matched this plan but is configured to AUDIT, so Wiz reported a warning instead of failing (verdict %s). Blocking here because a warning that nobody acts on is not a control. Failed policies: %s.",
+		[wiz_verdict_value, concat(", ", wiz_verdict_failed_policy_names)],
+	)
+}
+
+# Names of the Wiz policies that matched, read from the result. Useful in the
+# denial message so the run says *which* policy objected.
+# Verified path: run_tasks.wiz.result.iac.failedPolicyMatches[].policy.name
+wiz_verdict_failed_policy_names := sort([name |
+	some match in object.get(
+		input,
+		["run_tasks", "wiz", "result", "iac", "failedPolicyMatches"],
+		[],
+	)
+	name := object.get(match, ["policy", "name"], "")
+	name != ""
+])
 
 deny contains reason if {
 	some reason in wiz_verdict_violations

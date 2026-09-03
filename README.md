@@ -110,27 +110,41 @@ That field is a lookup, not a definition — it selects which policies run, not 
 they filter. Leaving it empty uses your tenant defaults. No value typed there can
 change a threshold.
 
-#### Finding out which rules are Critical, without Wiz console access
+#### Wiz IaC findings never reach CRITICAL — measured
 
-You don't need the Wiz UI to iterate. With `severityThreshold: CRITICAL`, only
-Critical findings survive filtering — so the policy input tells you directly
-whether you landed any:
+The stock threshold is not merely strict, it is unsatisfiable. Measured with
+policy filtering bypassed:
 
-1. Run a scenario with the connection in **Policy check** mode.
-2. Open the post-plan policy check step and copy the policy input.
-3. Read `run_tasks.wiz.result.iac.scanStatistics.criticalMatches`.
-   - `> 0` — the findings survived. `result.iac.ruleMatches` names them, and
-     `wiz_severity_budget` will block the run even though Wiz is set to AUDIT.
-     Your demo works with no Wiz change at all.
-   - `0` — nothing in that scenario is rated Critical. Try another, and if
-     `07-critical-exposure` also returns 0, stop writing Terraform: the
-     threshold itself has to come down.
+```
+wizcli iac scan --by-policy-hits=DISABLED   # scenarios/07-critical-exposure
 
-Measured so far on a stock tenant: `02-network-exposure` 86 findings and
-`04-iam-overprivileged` 15 findings, all filtered, zero Critical. Wide-open
-security groups and wildcard IAM admin are **not** Critical in Wiz's catalogue,
-which is why `07-critical-exposure` reaches for anonymous write access, publicly
-shared resources and public resource policies on secrets instead.
+IaC: 204 results
+     114 HIGH, 53 MEDIUM, 34 LOW, 3 INFO, 0 CRITICAL
+```
+
+Scenario 07 plants anonymous `s3:*` with a public-read-write ACL, a public AMI,
+world-readable Secrets Manager, an internet-facing unencrypted Redshift cluster,
+OpenSearch with anonymous `es:*`, and an EKS API server open to `0.0.0.0/0`.
+Nothing in Wiz's IaC catalogue rated any of it CRITICAL.
+
+**So a `severityThreshold: CRITICAL` IaC policy can never fail a run.** It is not
+a tuning problem you can work around by writing worse Terraform — there is no
+worse Terraform. The threshold has to move to **HIGH or below**, and that is the
+one change without which nothing else in this repo can block a run.
+
+Full measurements across scenarios, all against the stock CRITICAL threshold:
+
+| Scenario | IaC findings | Highest severity | Failed policies |
+|---|---|---|---|
+| `02-network-exposure` | 86 | — (all filtered) | none |
+| `04-iam-overprivileged` | 15 | — (all filtered) | none |
+| `07-critical-exposure` | 204 | HIGH (114 of them) | none |
+
+Two useful side notes. Wide-open security groups and wildcard IAM admin are
+rated **HIGH**, not Critical — worth knowing before you promise an audience a
+Critical finding. And `--by-policy-hits=DISABLED` lets you enumerate findings
+from a local `wizcli` run without console access, which is a serviceable
+fallback if you need to show findings before the Wiz policy is fixed.
 
 #### Choosing where enforcement happens
 
@@ -320,6 +334,20 @@ below 0.59; `import rego.v1` isn't recognised.
 
 **Scans fail after working previously.** A Wiz scan policy was renamed. Scalr
 matches display names exactly — update the name on the connection.
+
+### The escalation, if you don't own the Wiz tenant
+
+> Our Wiz IaC scanning cannot fail a build. `Default IaC policy` is configured
+> with `severityThreshold: CRITICAL`, but Wiz's IaC rules do not emit CRITICAL —
+> a deliberately extreme Terraform plan produced 204 findings (114 HIGH, 53
+> MEDIUM, 34 LOW, 3 INFO, 0 CRITICAL). The policy is therefore a no-op for IaC.
+> It is also set to `AUDIT` for the CLI lifecycle, so it would report rather than
+> block even if a finding qualified.
+>
+> Please create a CI/CD scan policy — type IaC, `severityThreshold` **HIGH**,
+> CLI enforcement **BLOCK** — named something stable, and send me the exact
+> display name. Cloning rather than editing the built-in leaves other pipelines
+> untouched.
 
 ---
 

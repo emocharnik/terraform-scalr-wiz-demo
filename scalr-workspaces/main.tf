@@ -8,13 +8,6 @@ terraform {
 
 locals {
   scenarios = [
-    "00-clean-baseline",
-    "01-public-storage",
-    "02-network-exposure",
-    "03-unencrypted-data",
-    "04-iam-overprivileged",
-    "05-low-severity-only",
-    "06-remediated",
     "07-critical-exposure",
   ]
 

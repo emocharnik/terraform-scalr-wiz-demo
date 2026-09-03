@@ -7,7 +7,7 @@ version = "v1"
 # PASSED_BY_POLICY on infrastructure that is wide open.
 policy "wiz_integration_hygiene" {
   enabled           = true
-  enforcement_level = "hard-mandatory"
+  enforcement_level = "advisory"
 }
 
 # Baseline: any Wiz failure, or any scan that did not complete, stops the run.
@@ -17,14 +17,14 @@ policy "wiz_verdict" {
   enforcement_level = "hard-mandatory"
 }
 
-# Severity budget: Critical/High block, Medium/Low are tolerated up to a limit.
-# Soft-mandatory so a violation can be overridden by an approver on the run,
-# which gives you the approval flow to demo as well as the block.
+# Blocks when a Wiz policy matched the plan, naming which one -- and does so
+# whether Wiz set that policy to AUDIT or BLOCK. On an audit-mode tenant this is
+# what actually gates the deploy, since Wiz itself returns only a warning.
 #
-# Leave this DISABLED for the first pass of the demo, then flip it to true and
-# re-run scenario 05 to show the same Wiz result producing a different outcome.
-policy "wiz_severity_budget" {
-  enabled           = false
+# Soft-mandatory, so an approver can override on the run. That gives you the
+# approval flow to demo alongside the block.
+policy "wiz_failed_policies" {
+  enabled           = true
   enforcement_level = "soft-mandatory"
 }
 

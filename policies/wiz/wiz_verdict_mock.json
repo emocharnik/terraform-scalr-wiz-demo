@@ -1,42 +1,121 @@
 {
   "wiz_verdict_mock": {
     "passed": {
-      "tfplan": { "resource_changes": [] },
+      "tfplan": {
+        "resource_changes": []
+      },
       "run_tasks": {
         "wiz": {
-          "status": { "verdict": "PASSED_BY_POLICY" }
+          "status": {
+            "verdict": "PASSED_BY_POLICY"
+          }
         }
       }
     },
     "failed_by_policy": {
-      "tfplan": { "resource_changes": [] },
+      "tfplan": {
+        "resource_changes": []
+      },
       "run_tasks": {
         "wiz": {
-          "status": { "verdict": "FAILED_BY_POLICY" }
+          "status": {
+            "verdict": "FAILED_BY_POLICY"
+          }
         }
       }
     },
     "errored": {
-      "tfplan": { "resource_changes": [] },
+      "tfplan": {
+        "resource_changes": []
+      },
       "run_tasks": {
         "wiz": {
-          "status": { "verdict": "ERRORED" }
+          "status": {
+            "verdict": "ERRORED"
+          }
         }
       }
     },
     "unreachable": {
-      "tfplan": { "resource_changes": [] },
+      "tfplan": {
+        "resource_changes": []
+      },
       "run_tasks": {
         "wiz": {
-          "status": { "verdict": "UNREACHABLE" }
+          "status": {
+            "verdict": "UNREACHABLE"
+          }
         }
       }
     },
     "no_wiz_result": {
-      "tfplan": { "resource_changes": [] }
+      "tfplan": {
+        "resource_changes": []
+      }
     },
     "pre_plan": {
       "run_tasks": {}
+    },
+    "warn_by_policy": {
+      "tfplan": {
+        "resource_changes": []
+      },
+      "run_tasks": {
+        "wiz": {
+          "status": {
+            "state": "SUCCESS",
+            "verdict": "WARN_BY_POLICY"
+          },
+          "result": {
+            "iac": {
+              "failedPolicyMatches": [
+                {
+                  "policy": {
+                    "id": "f6701816-33a5-4eec-827a-0e3fe81a93c7",
+                    "name": "Demo IaC policy",
+                    "description": "Default built-in policy for Infrastructure as Code scanning",
+                    "type": "IAC",
+                    "builtin": false,
+                    "projects": [
+                      {
+                        "id": "13009552-d70c-5963-b924-c857e656229f"
+                      }
+                    ],
+                    "policyLifecycleEnforcements": [
+                      {
+                        "enforcementMethod": "AUDIT",
+                        "deploymentLifecycle": "ADMISSION_CONTROLLER",
+                        "enforcementConfig": {
+                          "enforceOnScope": false
+                        }
+                      },
+                      {
+                        "enforcementMethod": "AUDIT",
+                        "deploymentLifecycle": "CLI",
+                        "enforcementConfig": null
+                      },
+                      {
+                        "enforcementMethod": "AUDIT",
+                        "deploymentLifecycle": "CODE",
+                        "enforcementConfig": null
+                      }
+                    ],
+                    "ignoreRules": null,
+                    "lifecycleTargets": [
+                      "BUILD",
+                      "DEPLOY",
+                      "CODE"
+                    ],
+                    "Default": false
+                  },
+                  "ignoreReason": null,
+                  "matchedIgnoreRules": null
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   }
 }
